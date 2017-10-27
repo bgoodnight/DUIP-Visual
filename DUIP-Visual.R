@@ -31,10 +31,13 @@ data <- data[complete.cases(data[ , "value"]),]
 data$value <- as.double(data$value)
 data$variable <- as.double(data$variable)
 
+#add variable representing number of data points per state per indicator
+#this is used to exclude states / indicators with too few observations for regression
 data %>%
   group_by(Awardee, Indicator.Number) %>%
   mutate(number = n()) -> data
 
+#add variable Slope - regression coefficient of value on year for each state and indicator
 data[data$number > 2,] %>%
   group_by(Awardee, Indicator.Number) %>% # You can add here additional grouping variables if your real data set enables it
   do(mod = lm(value ~ variable, data = .)) %>%
