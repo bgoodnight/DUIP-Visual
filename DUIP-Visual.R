@@ -5,7 +5,7 @@ library(reshape2)
 library(data.table)
 
 #Read in data
-short <- read.csv("alldata.csv")
+short <- read.csv("~/alldata.csv")
 
 #select variables for analysis
 myvars <- c("Awardee","Program","Category","Indicator.Number","Indicator.Name",
