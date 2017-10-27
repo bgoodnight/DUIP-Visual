@@ -2,20 +2,22 @@ library(shiny)
 library(ggplot2)
 library(dplyr)
 library(reshape2)
-library(data.table)
 
 #Read in data
 short <- read.csv("~/alldata.csv")
 
+#Keep only first 14 indicators
+short <- subset(short, Indicator.Number <= 14)
+
 #select variables for analysis
 myvars <- c("Awardee","Program","Category","Indicator.Number","Indicator.Name",
-            "X2013.Age.Adjusted.Rate","X2014.Age.Adjusted.Rate","X2015.Age.Adjusted.Rate","X2016.Age.Adjusted.Rate","Beta")
+            "X2013.Age.Adjusted.Rate","X2014.Age.Adjusted.Rate","X2015.Age.Adjusted.Rate","X2016.Age.Adjusted.Rate")
 short <- short[myvars]
 
 #set all zeros to NA
 short[short == 0] <- NA
 
-#change column names to years
+#change column names to year numbers
 colnames(short)[6:9] <- 2013:2016
 
 #create long data frame with with years as new variable
@@ -24,29 +26,35 @@ data = melt(short, measure.vars = c("2013","2014","2015","2016"))
 #change state names to lower-case for merge
 data["Awardee"] <- mutate_all(data["Awardee"], funs(tolower))
 
-#remove rows with missing data to reduce data frame size
-data <- data[complete.cases(data[ , "value"]),]
-
 #change indicator values and years to numeric data
 data$value <- as.double(data$value)
 data$variable <- as.double(data$variable)
 
+#set year 2013 to zero to aid in interpretability of regression intercepts
+data$variable <- data$variable - 1
+
+#remove rows with missing data to reduce data frame size
+data <- data[complete.cases(data[ , "value"]),]
+
 #add variable representing number of data points per state per indicator
+#and add variable for mean of all years
 #this is used to exclude states / indicators with too few observations for regression
 data %>%
   group_by(Awardee, Indicator.Number) %>%
+  mutate(valuemean = mean(value)) %>%
   mutate(number = n()) -> data
 
-#add variable Slope - regression coefficient of value on year for each state and indicator
+#add new variable Slope - regression coefficient of value on year for each state and indicator
 data[data$number > 2,] %>%
   group_by(Awardee, Indicator.Number) %>% # You can add here additional grouping variables if your real data set enables it
   do(mod = lm(value ~ variable, data = .)) %>%
   mutate(Slope = summary(mod)$coeff[2]) %>%
+  mutate(Intercept = summary(mod)$coeff[1]) %>%
   select(-mod) %>%
   inner_join(data, by = c("Awardee", "Indicator.Number")) -> data
 
 #adjust years to range from 2012 to 2016
-data$variable <- data$variable + 2012
+data$variable <- data$variable + 2013
 
 #import shape data for states
 states <- map_data("state")
@@ -80,7 +88,7 @@ ui <- fluidPage(
                   min = 2013,
                   max = 2020,
                   sep = "",
-                  value = c(2013,2015)),
+                  value = c(2013,2018)),
       selectInput("indicatorInput", "Indicator", c("All Drug Overdose Deaths" = 1,
                                                    "Drug Overdose Deaths Involving Opioids" = 2,
                                                    "Drug overdose deaths involving natural, semi-synthetic, and synthetic opioids" = 3,
@@ -107,23 +115,24 @@ ui <- fluidPage(
 )
 )
 
+#create server
 server <- function(input, output) {
   output$coolplot <- renderPlot({
     filtered <-
       states %>%
       filter(
-        Indicator.Number == input$indicatorInput
+        Indicator.Number == input$indicatorInput,
+        variable == input$yearInput[1]
         )
     
     ggplot(data = filtered) + 
       geom_polygon(data = map_data("state"), aes(x=long, y = lat, group = group), fill = "grey", color = "white") +
-      geom_polygon(aes(x = long, y = lat, fill = value, group = group), color = "black") + 
+      geom_polygon(aes(x = long, y = lat, fill = (value), group = group), color = "black") + 
       scale_fill_gradient(low='lightblue', high='black') +
       geom_point(aes(clong, clat, size = (Slope), color = sign, shape = sign), fill = "white") +
       scale_shape_manual(values=c(25, 24)) +
       scale_color_manual(values=c("darkgreen", "red")) +
-      coord_fixed(1.3) +
-      theme(legend.position="none")
+      coord_fixed(1.3)
       
   })
   
@@ -147,7 +156,7 @@ server <- function(input, output) {
       filter(
         Indicator.Number == input$indicatorInput
       ) %>%
-      select(Awardee, "2013", "2014", "2015", "2016", "Beta")
+      select(Awardee, "2013", "2014", "2015", "2016")
     filtered
   })
 
