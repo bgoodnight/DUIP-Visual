@@ -127,12 +127,24 @@ server <- function(input, output) {
     
     ggplot(data = filtered) + 
       geom_polygon(data = map_data("state"), aes(x=long, y = lat, group = group), fill = "grey", color = "white") +
-      geom_polygon(aes(x = long, y = lat, fill = (value), group = group), color = "black") + 
-      scale_fill_gradient(low='lightblue', high='black') +
-      geom_point(aes(clong, clat, size = (Slope), color = sign, shape = sign), fill = "white") +
-      scale_shape_manual(values=c(25, 24)) +
-      scale_color_manual(values=c("darkgreen", "red")) +
-      coord_fixed(1.3)
+      geom_polygon(aes(x = long, y = lat, fill = value, group = group), color = "black") + 
+      scale_fill_gradient(low='lightblue', high='black', name = paste(input$yearInput[1],"Value")) +
+      geom_point(aes(clong, clat, size = (abs(Slope)), color = sign, shape = sign), fill = "white") +
+      scale_size(name = "Yearly Change") +
+      scale_shape_manual(values=c(24, 25), name = "Trend", labels = c("Getting Better","Getting Worse")) +
+      scale_color_manual(values=c("darkgreen", "red"), name = "Trend", labels = c("Getting Better","Getting Worse")) +
+      coord_fixed(1.3) +
+      theme(axis.line=element_blank(),
+            axis.text.x=element_blank(),
+            axis.text.y=element_blank(),
+            axis.ticks=element_blank(),
+            axis.title.x=element_blank(),
+            axis.title.y=element_blank(),
+            panel.background=element_blank(),
+            panel.border=element_blank(),
+            panel.grid.major=element_blank(),
+            panel.grid.minor=element_blank(),
+            plot.background=element_blank())
       
   })
   
@@ -146,7 +158,8 @@ server <- function(input, output) {
     ggplot(filtered,aes(variable,value)) +
       stat_summary(fun.data = "mean_se", color = "red", size = 2) + 
       geom_smooth(method='lm',fullrange=TRUE) + 
-      xlim(input$yearInput[1], input$yearInput[2])
+      xlim(input$yearInput[1], input$yearInput[2]) +
+      labs(x = "Year", y = paste("Indicator # ",input$indicatorInput))
     
   })
   
