@@ -128,7 +128,8 @@ server <- function(input, output) {
     ggplot(data = filtered) + 
       geom_polygon(data = map_data("state"), aes(x=long, y = lat, group = group), fill = "grey", color = "white") +
       geom_polygon(aes(x = long, y = lat, fill = value, group = group), color = "black") + 
-      scale_fill_gradient(low='lightblue', high='black', name = paste(input$yearInput[1],"Value")) +
+      scale_fill_gradient(low = 'lightblue', high = 'black', name = paste(input$yearInput[1],"Value"), 
+                          limits=c(0, max(subset(data, Indicator.Number == input$indicatorInput)$value))) +
       geom_point(aes(clong, clat, size = (abs(Slope)), color = sign, shape = sign), fill = "white") +
       scale_size(name = "Yearly Change") +
       scale_shape_manual(values=c(24, 25), name = "Trend", labels = c("Getting Better","Getting Worse")) +
