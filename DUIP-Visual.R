@@ -88,7 +88,9 @@ ui <- fluidPage(
                   min = 2013,
                   max = 2020,
                   sep = "",
-                  value = c(2013,2018)),
+                  value = c(2013,2018),
+                  animate = 
+                    animationOptions(interval=3000)),
       selectInput("indicatorInput", "Indicator", c("All Drug Overdose Deaths" = 1,
                                                    "Drug Overdose Deaths Involving Opioids" = 2,
                                                    "Drug overdose deaths involving natural, semi-synthetic, and synthetic opioids" = 3,
@@ -127,8 +129,8 @@ server <- function(input, output) {
     
     ggplot(data = filtered) + 
       geom_polygon(data = map_data("state"), aes(x=long, y = lat, group = group), fill = "grey", color = "white") +
-      geom_polygon(aes(x = long, y = lat, fill = value, group = group), color = "black") + 
-      scale_fill_gradient(low = 'lightblue', high = 'black', name = paste(input$yearInput[1],"Value"), 
+      geom_polygon(aes(x = long, y = lat, fill = value, group = group), color = "grey40") + 
+      scale_fill_gradient(low = 'lightblue', high = 'darkblue', name = paste(input$yearInput[1],"Value"), 
                           limits=c(0, max(subset(data, Indicator.Number == input$indicatorInput)$value))) +
       geom_point(aes(clong, clat, size = (abs(Slope)), color = sign, shape = sign), fill = "white") +
       scale_size(name = "Yearly Change") +
@@ -159,7 +161,7 @@ server <- function(input, output) {
     ggplot(filtered,aes(variable,value)) +
       stat_summary(fun.data = "mean_se", color = "red", size = 2) + 
       geom_smooth(method='lm',fullrange=TRUE) + 
-      xlim(input$yearInput[1], input$yearInput[2]) +
+      xlim(2013, input$yearInput[2]) +
       labs(x = "Year", y = paste("Indicator # ",input$indicatorInput))
     
   })
