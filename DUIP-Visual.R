@@ -11,17 +11,17 @@ short <- subset(short, Indicator.Number <= 14)
 
 #select variables for analysis
 myvars <- c("Awardee","Program","Category","Indicator.Number","Indicator.Name",
-            "X2013.Age.Adjusted.Rate","X2014.Age.Adjusted.Rate","X2015.Age.Adjusted.Rate","X2016.Age.Adjusted.Rate")
+            "X2013.Age.Adjusted.Rate","X2014.Age.Adjusted.Rate","X2015.Age.Adjusted.Rate")
 short <- short[myvars]
 
 #set all zeros to NA
 short[short == 0] <- NA
 
 #change column names to year numbers
-colnames(short)[6:9] <- 2013:2016
+colnames(short)[6:8] <- 2013:2015
 
 #create long data frame with with years as new variable
-data = melt(short, measure.vars = c("2013","2014","2015","2016"))
+data = melt(short, measure.vars = c("2013","2014","2015"))
 
 #change state names to lower-case for merge
 data["Awardee"] <- mutate_all(data["Awardee"], funs(tolower))
@@ -34,24 +34,24 @@ data$variable <- as.double(data$variable)
 data$variable <- data$variable - 1
 
 #remove rows with missing data to reduce data frame size
-data <- data[complete.cases(data[ , "value"]),]
+slopes <- data[complete.cases(data[ , "value"]),]
 
 #add variable representing number of data points per state per indicator
 #and add variable for mean of all years
 #this is used to exclude states / indicators with too few observations for regression
-data %>%
+slopes %>%
   group_by(Awardee, Indicator.Number) %>%
   mutate(valuemean = mean(value)) %>%
-  mutate(number = n()) -> data
+  mutate(number = n()) -> slopes
 
 #add new variable Slope - regression coefficient of value on year for each state and indicator
-data[data$number > 2,] %>%
+slopes[slopes$number > 2,] %>%
   group_by(Awardee, Indicator.Number) %>% # You can add here additional grouping variables if your real data set enables it
   do(mod = lm(value ~ variable, data = .)) %>%
   mutate(Slope = summary(mod)$coeff[2]) %>%
   mutate(Intercept = summary(mod)$coeff[1]) %>%
   select(-mod) %>%
-  inner_join(data, by = c("Awardee", "Indicator.Number")) -> data
+  inner_join(slopes, by = c("Awardee", "Indicator.Number")) -> slopes
 
 #adjust years to range from 2012 to 2016
 data$variable <- data$variable + 2013
@@ -62,21 +62,18 @@ states <- map_data("state")
 #change state name column in state shape data frame to match indicator data
 colnames(states)[5] <- "Awardee"
 
-#merge state shape data with indicator data
-states <- inner_join(states, data, by = "Awardee")
-
-#create new data frame with center points (long and lat) for each state
+#create new data frame with geographical center points for states (long and lat) 
 cnames <- aggregate(cbind(long, lat) ~ Awardee, data=states, 
                     FUN=function(x)mean(range(x)))
 
 #change variable names for long and lat in center point data frame to differentiate with other frame
-colnames(cnames)[2:3] <- c("clong","clat")
-
-#merge center point data frame with state shape and indicator data
-states <- inner_join(cnames, states, by = "Awardee")
+colnames(cnames)[2:3] <- c("long","lat")
 
 #create new variable sign that indicates whether beta coefficient is positive or negative
-states[["sign"]] = ifelse(states[["Slope"]] >= 0, "positive", "negative")
+slopes[["sign"]] = ifelse(slopes[["Slope"]] >= 0, "positive", "negative")
+
+#merge center point data frame with state shape and indicator data
+slopes <- inner_join(cnames, filter(slopes), by = "Awardee")
 
 #create UI
 ui <- fluidPage(
@@ -86,9 +83,9 @@ ui <- fluidPage(
     sidebarPanel(
       sliderInput("yearInput","Year",
                   min = 2013,
-                  max = 2020,
+                  max = 2015,
                   sep = "",
-                  value = c(2013,2018),
+                  value = 2013,
                   animate = 
                     animationOptions(interval=3000)),
       selectInput("indicatorInput", "Indicator", c("All Drug Overdose Deaths" = 1,
@@ -121,18 +118,23 @@ ui <- fluidPage(
 server <- function(input, output) {
   output$coolplot <- renderPlot({
     filtered <-
-      states %>%
+      data %>%
       filter(
         Indicator.Number == input$indicatorInput,
-        variable == input$yearInput[1]
+        variable == input$yearInput
         )
     
+    newslope <- filter(slopes, Indicator.Number == input$indicatorInput)
+    
+    #merge state shape data with indicator data
+    filtered <- inner_join(filtered, states, by = "Awardee")
+    
     ggplot(data = filtered) + 
-      geom_polygon(data = map_data("state"), aes(x=long, y = lat, group = group), fill = "grey", color = "white") +
+      geom_polygon(data = map_data("state"), aes(x=long, y = lat, fill = value, group = group), fill = "grey", color = "white") +
       geom_polygon(aes(x = long, y = lat, fill = value, group = group), color = "grey40") + 
-      scale_fill_gradient(low = 'lightblue', high = 'darkblue', name = paste(input$yearInput[1],"Value"), 
-                          limits=c(0, max(subset(data, Indicator.Number == input$indicatorInput)$value))) +
-      geom_point(aes(clong, clat, size = (abs(Slope)), color = sign, shape = sign), fill = "white") +
+      scale_fill_gradient2(low = 'white', mid = 'lightblue', high = 'darkblue', name = paste(input$yearInput[1],"Value"), 
+                          limits=c(0, max(subset(slopes, Indicator.Number == input$indicatorInput)$value))) +
+      geom_point(data = newslope, aes(long, lat, size = (abs(Slope)), color = sign, shape = sign), fill = "white") +
       scale_size(name = "Yearly Change") +
       scale_shape_manual(values=c(24, 25), name = "Trend", labels = c("Getting Better","Getting Worse")) +
       scale_color_manual(values=c("darkgreen", "red"), name = "Trend", labels = c("Getting Better","Getting Worse")) +
@@ -159,9 +161,9 @@ server <- function(input, output) {
       )
     
     ggplot(filtered,aes(variable,value)) +
-      stat_summary(fun.data = "mean_se", color = "red", size = 2) + 
+      stat_summary(fun.data = "mean_se", color = "blue", size = 1) + 
       geom_smooth(method='lm',fullrange=TRUE) + 
-      xlim(2013, input$yearInput[2]) +
+      xlim(2013, 2018) +
       labs(x = "Year", y = paste("Indicator # ",input$indicatorInput))
     
   })
@@ -172,7 +174,7 @@ server <- function(input, output) {
       filter(
         Indicator.Number == input$indicatorInput
       ) %>%
-      select(Awardee, "2013", "2014", "2015", "2016")
+      select(Awardee, "2013", "2014", "2015")
     filtered
   })
 
