@@ -63,17 +63,19 @@ states <- map_data("state")
 colnames(states)[5] <- "Awardee"
 
 #create new data frame with geographical center points for states (long and lat) 
-cnames <- aggregate(cbind(long, lat) ~ Awardee, data=states, 
-                    FUN=function(x)mean(range(x)))
-
-#change variable names for long and lat in center point data frame to differentiate with other frame
-colnames(cnames)[2:3] <- c("long","lat")
+centroids <- maps:::apply.polygon(map("state", plot=FALSE, fill = TRUE), maps:::centroid.polygon)
+centroids <- centroids[!is.na(names(centroids))]
+centroid_array <- Reduce(rbind, centroids)
+dimnames(centroid_array) <- list(gsub("[^,]*,", "", names(centroids)),
+                                 c("long", "lat"))
+label_df <- as.data.frame(centroid_array)
+label_df$Awardee <- rownames(label_df)
 
 #create new variable sign that indicates whether beta coefficient is positive or negative
 slopes[["sign"]] = ifelse(slopes[["Slope"]] >= 0, "positive", "negative")
 
 #merge center point data frame with state shape and indicator data
-slopes <- inner_join(cnames, filter(slopes), by = "Awardee")
+slopes <- inner_join(label_df, filter(slopes), by = "Awardee")
 
 #create UI
 ui <- fluidPage(
