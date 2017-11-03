@@ -36,7 +36,10 @@ ui <- fluidPage(
                                                    "All drug overdose hospitalizations" = 12,
                                                    "Hospitalizations involving all opioid overdose excluding heroin" = 13,
                                                    "Hospitalizations involving heroin overdose" = 14
-      ), selected = 8)
+      ), selected = 8),
+      radioButtons('format', 'Download map as', c('HTML', 'Word'),
+                   inline = TRUE),
+      downloadButton('downloadReport')
     ),
     mainPanel(
       tabsetPanel(type="tab",
