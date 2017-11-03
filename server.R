@@ -11,6 +11,7 @@ library(shiny)
 library(ggplot2)
 library(dplyr)
 library(reshape2)
+library(sp)
 
 #Read in data
 short <- read.csv("~/alldata.csv")
@@ -72,13 +73,12 @@ states <- map_data("state")
 colnames(states)[5] <- "Awardee"
 
 #create new data frame with geographical center points for states (long and lat) 
-centroids <- maps:::apply.polygon(map("state", plot=FALSE, fill = TRUE), maps:::centroid.polygon)
-centroids <- centroids[!is.na(names(centroids))]
-centroid_array <- Reduce(rbind, centroids)
-dimnames(centroid_array) <- list(gsub("[^,]*,", "", names(centroids)),
-                                 c("long", "lat"))
-label_df <- as.data.frame(centroid_array)
-label_df$Awardee <- rownames(label_df)
+getLabelPoint <- # Returns a county-named list of label points
+  function(state) {Polygon(state[c('long', 'lat')])@labpt}
+centroids <- by(states, states$Awardee, getLabelPoint)
+label_df <- do.call("rbind.data.frame", centroids)  # Convert to Data Frame
+names(label_df) <- c('long', 'lat')                 # Appropriate Header
+label_df$Awardee <- rownames(centroids)
 
 #create new variable sign that indicates whether beta coefficient is positive or negative
 slopes[["sign"]] = ifelse(slopes[["Slope"]] >= 0, "positive", "negative")
@@ -107,7 +107,7 @@ server <- function(input, output) {
                            limits=c(0, max(subset(slopes, Indicator.Number == input$indicatorInput)$value))) +
       geom_point(data = newslope, aes(long, lat, size = (abs(Slope)), color = sign, shape = sign), fill = "white") +
       scale_size(name = "Yearly Change") +
-      scale_shape_manual(values=c(24, 25), name = "Trend", labels = c("Getting Better","Getting Worse")) +
+      scale_shape_manual(values=c(25, 24), name = "Trend", labels = c("Getting Better","Getting Worse")) +
       scale_color_manual(values=c("darkgreen", "red"), name = "Trend", labels = c("Getting Better","Getting Worse")) +
       coord_fixed(1.3) +
       theme(axis.line=element_blank(),
@@ -140,13 +140,15 @@ server <- function(input, output) {
   })
   
   output$results <- renderTable({
-    filtered <-
-      short %>%
-      filter(
-        Indicator.Number == input$indicatorInput
-      ) %>%
-      select(Awardee, "2013", "2014", "2015")
-    filtered
+    short <- filter(short, Indicator.Number == input$indicatorInput)
+    short["Merge"] <- mutate_all(short["Awardee"], funs(tolower))
+    #change state names to lower-case for merge
+    slopes <- filter(slopes, Indicator.Number == input$indicatorInput, variable == 0)
+    colnames(slopes)[3] <- "Merge"
+    display <- left_join(short,slopes,"Merge")
+    display <- select(display,"Awardee","2013","2014","2015","Slope")
+    display <- arrange(display,Awardee)
+    display
   })
   
 }

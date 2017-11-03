@@ -40,8 +40,9 @@ ui <- fluidPage(
     ),
     mainPanel(
       tabsetPanel(type="tab",
-                  tabPanel("Map", plotOutput("coolplot", height = 600)),
-                  tabPanel("Trend", plotOutput("trendplot", height = 200)),
+                  tabPanel("Trend", 
+                           plotOutput("coolplot", height = 650),
+                           plotOutput("trendplot", height = 250)),
                   tabPanel("Data", tableOutput("results"))
                   )
       
