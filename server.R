@@ -12,6 +12,7 @@ library(ggplot2)
 library(dplyr)
 library(reshape2)
 library(sp)
+library(rmarkdown)
 
 #Read in data
 short <- read.csv("~/alldata.csv")
@@ -168,8 +169,7 @@ function(input, output) {
       on.exit(setwd(owd))
       file.copy(src, 'report.Rmd', overwrite = TRUE)
       
-      library(rmarkdown)
-      out <- render('report.Rmd', switch(
+            out <- render('report.Rmd', switch(
         input$format,
         PDF = pdf_document(), HTML = html_document(), Word = word_document()
       ))
