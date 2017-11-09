@@ -37,7 +37,7 @@ ui <- fluidPage(
                                                    "Hospitalizations involving all opioid overdose excluding heroin" = 13,
                                                    "Hospitalizations involving heroin overdose" = 14
       ), selected = 8),
-      radioButtons('format', 'Download map as', c('HTML', 'Word'),
+      radioButtons('format', 'Export report as', c('HTML', 'Word'),
                    inline = TRUE),
       downloadButton('downloadReport')
     ),

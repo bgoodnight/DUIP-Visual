@@ -143,7 +143,7 @@ function(input, output) {
       stat_summary(fun.data = "mean_se", color = "blue", size = 1) + 
       geom_smooth(method='lm',fullrange=TRUE) + 
       xlim(2013, 2018) +
-      labs(title = paste("Nationwide Trend for",filtered[1,"Indicator.Name"]), x = "Year", y = paste("Indicator #",input$indicatorInput))
+      labs(title = paste("Nationwide Trend for",filtered[1,"Indicator.Name"]), x = "Year", y = "National Average")
     
   })
   
