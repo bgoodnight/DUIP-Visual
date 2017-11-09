@@ -102,15 +102,21 @@ function(input, output) {
     #merge state shape data with indicator data
     filtered <- inner_join(filtered, states, by = "Awardee")
     
-    ggplot(data = filtered) + 
-      geom_polygon(data = map_data("state"), aes(x=long, y = lat, fill = value, group = group), fill = "grey", color = "white") +
-      geom_polygon(aes(x = long, y = lat, fill = value, group = group), color = "grey40") + 
-      scale_fill_gradient2(low = 'white', mid = 'lightblue', high = 'darkblue', name = paste(input$yearInput[1],"Value"), 
-                           limits=c(0, max(subset(slopes, Indicator.Number == input$indicatorInput)$value))) +
-      geom_point(data = newslope, aes(long, lat, size = (abs(Slope)), color = sign, shape = sign), fill = "white") +
+    backdrop <- geom_polygon(data = map_data("state"), aes(x=long, y = lat, group = group), fill = "grey", color = "white")
+    
+    descriptives <- geom_polygon(data = filtered, aes(x = long, y = lat, fill = value, group = group), color = "grey40")
+    
+    trend <- geom_point(data = newslope, aes(long, lat, size = abs(Slope), shape = sign, color = sign))
+      
+    ggplot() + 
+      backdrop +
+      descriptives +
+      scale_fill_gradient(low = 'lightblue', high = 'darkblue', name = paste(input$yearInput[1],"Value"), 
+                          limits=c(0, max(subset(slopes, Indicator.Number == input$indicatorInput)$value))) +
+      trend +
       scale_size(name = "Yearly Change") +
-      scale_shape_manual(values=c(25, 24), name = "Trend", labels = c("Getting Better","Getting Worse")) +
-      scale_color_manual(values=c("darkgreen", "red"), name = "Trend", labels = c("Getting Better","Getting Worse")) +
+      scale_shape_manual(values=c(19, 17), name = "Trend", labels = c("Getting Better","Getting Worse")) +
+      scale_color_manual(values=c('green', 'red'), name = "Trend", labels = c("Getting Better","Getting Worse")) +
       coord_fixed(1.3) +
       theme(axis.line=element_blank(),
             axis.text.x=element_blank(),
@@ -118,12 +124,12 @@ function(input, output) {
             axis.ticks=element_blank(),
             axis.title.x=element_blank(),
             axis.title.y=element_blank(),
+            legend.position = "right",
             panel.background=element_blank(),
             panel.border=element_blank(),
             panel.grid.major=element_blank(),
             panel.grid.minor=element_blank(),
             plot.background=element_blank())
-    
   })
   
   output$trendplot <- renderPlot({
