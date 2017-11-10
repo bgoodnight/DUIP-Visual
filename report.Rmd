@@ -45,7 +45,7 @@ The symbols on each state represent the yearly change in the annual rate of `r t
 ```
 
 The average level of `r tolower(filtered[1,"Indicator.Name"])` in `r input$yearInput` for all PfS / DDPI states was `r round(mean(filtered$value, na.rm = TRUE), digits = 1)`.
-
+\newpage
 ```{r echo=FALSE}
 filtered <-
       data %>%
@@ -81,7 +81,7 @@ Across all years surveyed, the state with the lowest level of `r tolower(filtere
 The state with the highest level of `r tolower(filtered[1,"Indicator.Name"])` was `r filtered[which.max(filtered$value),"Awardee"]` in `r filtered[which.max(filtered$value),"variable"]` with a rate of `r round(filtered[which.max(filtered$value),"value"],1)`.
 
 Overall, `r newslope[which.max(newslope$Slope),"Awardee"]` had the highest rate of change with an average annual change of `r round(newslope[which.max(newslope$Slope),"Slope"],1)`.
-
+\newpage
 A table of the data used to generate this report is included below.
 
 ``` {r echo=FALSE, warning=FALSE}

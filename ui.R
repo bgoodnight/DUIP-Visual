@@ -15,6 +15,7 @@ ui <- fluidPage(
   titlePanel("Opioid Mortality and Morbidity Trends", windowTitle = "Opioid Mortality and Morbidity Trends"),
   sidebarLayout(
     sidebarPanel(
+      width = 3,
       sliderInput("yearInput","Year",
                   min = 2013,
                   max = 2015,
@@ -37,14 +38,14 @@ ui <- fluidPage(
                                                    "Hospitalizations involving all opioid overdose excluding heroin" = 13,
                                                    "Hospitalizations involving heroin overdose" = 14
       ), selected = 8),
-      radioButtons('format', 'Export report as', c('HTML', 'Word'),
+      radioButtons('format', 'Export report as', c('HTML', 'PDF', 'Word'),
                    inline = TRUE),
       downloadButton('downloadReport')
     ),
     mainPanel(
       tabsetPanel(type="tab",
                   tabPanel("Trend", 
-                           plotOutput("coolplot", height = 650),
+                           plotOutput("coolplot", height = 550),
                            plotOutput("trendplot", height = 250)),
                   tabPanel("Data", tableOutput("results"))
                   )
