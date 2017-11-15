@@ -1,18 +1,10 @@
-#
-# This is the server logic of a Shiny web application. You can run the 
-# application by clicking 'Run App' above.
-#
-# Find out more about building applications with Shiny here:
-# 
-#    http://shiny.rstudio.com/
-#
-
 library(shiny)
 library(ggplot2)
 library(dplyr)
 library(reshape2)
 library(sp)
 library(rmarkdown)
+library(shinydashboard)
 
 #Read in data
 short <- read.csv("~/alldata.csv")
@@ -101,7 +93,7 @@ function(input, output) {
     
     #merge state shape data with indicator data
     filtered <- inner_join(filtered, states, by = "Awardee")
-    
+
     backdrop <- geom_polygon(data = map_data("state"), aes(x=long, y = lat, group = group), fill = "grey", color = "white")
     
     descriptives <- geom_polygon(data = filtered, aes(x = long, y = lat, fill = value, group = group), color = "grey40")
@@ -117,6 +109,49 @@ function(input, output) {
       scale_size(name = "Yearly Change") +
       scale_shape_manual(values=c(19, 17), name = "Trend", labels = c("Getting Better","Getting Worse")) +
       scale_color_manual(values=c('green', 'red'), name = "Trend", labels = c("Getting Better","Getting Worse")) +
+      coord_fixed(1.3) +
+      theme(axis.line=element_blank(),
+            axis.text.x=element_blank(),
+            axis.text.y=element_blank(),
+            axis.ticks=element_blank(),
+            axis.title.x=element_blank(),
+            axis.title.y=element_blank(),
+            legend.position = "right",
+            panel.background=element_blank(),
+            panel.border=element_blank(),
+            panel.grid.major=element_blank(),
+            panel.grid.minor=element_blank(),
+            plot.background=element_blank())
+  })
+  
+  output$projectionPlot <- renderPlot({
+    projection <-
+      data %>%
+      filter(
+        Indicator.Number == input$indicatorInput
+      )
+    
+    newslope <- filter(slopes, Indicator.Number == input$indicatorInput)
+    projectionSlope <- filter(slopes, Indicator.Number == input$indicatorInput)
+    projectionSlope <- select(projectionSlope, Awardee, Slope, Intercept)
+    
+    #merge state shape data with indicator data
+    projection <- inner_join(projection, projectionSlope, by = "Awardee")
+    projection <- inner_join(projection, states, by = "Awardee")
+    
+    backdrop <- geom_polygon(data = map_data("state"), aes(x=long, y = lat, group = group), fill = "grey", color = "white")
+    
+    descriptives <- geom_polygon(data = projection, aes(x = long, y = lat, fill = (Intercept + (Slope*(input$projectionInput-2013))), group = group), color = "grey40")
+    
+    trend <- geom_point(data = newslope, aes(long, lat, size = abs(Slope), shape = sign, color = sign))
+    
+    ggplot() + 
+      backdrop +
+      descriptives +
+      scale_fill_gradient(low = 'lightblue', high = 'darkblue', name = paste(input$projectionInput[1],"Estimate"), 
+                          limits=c(0, max(newslope$Intercept+(newslope$Slope*(2018-2013))))) +
+      geom_text(data = newslope, aes(long, lat, color= sign, label=round((Intercept+(Slope*(input$projectionInput[1]-2013))),2))) +
+      scale_color_manual(values=c('darkgreen', 'darkred'), name = "Trend", labels = c("Getting Better","Getting Worse")) +
       coord_fixed(1.3) +
       theme(axis.line=element_blank(),
             axis.text.x=element_blank(),
