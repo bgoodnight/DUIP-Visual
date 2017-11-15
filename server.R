@@ -194,9 +194,18 @@ function(input, output) {
     display
   })
   
+  output$downloadData <- downloadHandler(
+    filename = function() {
+      paste("opioid_data", ".csv", sep = "")
+    },
+    content = function(file) {
+      write.csv(select(filter(short, Indicator.Number == input$indicatorInput),"Awardee","2013","2014","2015"), file, row.names = FALSE)
+    }
+  )
+  
   output$downloadReport <- downloadHandler(
     filename = function() {
-      paste('my-report', sep = '.', switch(
+      paste(input$yearInput, sep = '.', switch(
         input$format, PDF = 'pdf', HTML = 'html', Word = 'docx'
       ))
     },

@@ -21,9 +21,9 @@ ui <- dashboardPage(
                                                      "Hospitalizations involving all opioid overdose excluding heroin" = 13,
                                                      "Hospitalizations involving heroin overdose" = 14
         ), selected = 8),
-        menuItem("Heat Map", tabName = "heatmap"),
-        menuItem("Forecast", tabName = "projection"),
-        menuItem("Raw Data", tabName = "data")
+        menuItem("Heat Map", icon = icon("map"), tabName = "heatmap"),
+        menuItem("Forecast", icon = icon("line-chart"), tabName = "projection"),
+        menuItem("Raw Data", icon = icon("file-text"), tabName = "data")
       )
     ),
     dashboardBody(
@@ -68,7 +68,8 @@ ui <- dashboardPage(
           tabItem(
             tabName = "data",
             fluidRow(
-              box(tableOutput("results"))
+              box(tableOutput("results"),
+                  downloadButton("downloadData", "Download CSV"))
               
             )
           )
