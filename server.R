@@ -7,7 +7,7 @@ library(rmarkdown)
 library(shinydashboard)
 
 #Read in data
-short <- read.csv("~/alldata.csv")
+short <- read.csv("alldata.csv")
 
 #Keep only first 14 indicators
 short <- subset(short, Indicator.Number <= 14)
@@ -141,16 +141,16 @@ function(input, output) {
     
     backdrop <- geom_polygon(data = map_data("state"), aes(x=long, y = lat, group = group), fill = "grey", color = "white")
     
-    descriptives <- geom_polygon(data = projection, aes(x = long, y = lat, fill = (Intercept + (Slope*(input$projectionInput-2013))), group = group), color = "grey40")
+    descriptives <- geom_polygon(data = projection, aes(x = long, y = lat, fill = (Intercept + (Slope*(input$projectionInput-2013))), group = group), color = "grey40", size = .3)
     
-    trend <- geom_point(data = newslope, aes(long, lat, size = abs(Slope), shape = sign, color = sign))
+    trend <- geom_text(data = newslope, aes(long, lat, color= sign, label=round((Intercept+(Slope*(input$projectionInput[1]-2013))),1)))
     
     ggplot() + 
       backdrop +
       descriptives +
       scale_fill_gradient(low = 'lightblue', high = 'darkblue', name = paste(input$projectionInput[1],"Estimate"), 
                           limits=c(0, max(newslope$Intercept+(newslope$Slope*(2018-2013))))) +
-      geom_text(data = newslope, aes(long, lat, color= sign, label=round((Intercept+(Slope*(input$projectionInput[1]-2013))),2))) +
+      trend +
       scale_color_manual(values=c('darkgreen', 'darkred'), name = "Trend", labels = c("Getting Better","Getting Worse")) +
       coord_fixed(1.3) +
       theme(axis.line=element_blank(),
@@ -183,14 +183,10 @@ function(input, output) {
   })
   
   output$results <- renderTable({
-    short <- filter(short, Indicator.Number == input$indicatorInput)
-    short["Merge"] <- mutate_all(short["Awardee"], funs(tolower))
-    #change state names to lower-case for merge
-    slopes <- filter(slopes, Indicator.Number == input$indicatorInput, variable == 0)
-    colnames(slopes)[3] <- "Merge"
-    display <- left_join(short,slopes,"Merge")
-    display <- select(display,"Awardee","2013","2014","2015","Slope")
-    display <- arrange(display,Awardee)
+    display <- filter(short, Indicator.Number == input$indicatorInput)
+    #short <- select(short, 'Awardee', 'Program', 'Category, '2013', '2014', '2015')
+    showvars <- c("Awardee","Program","Category","2013","2014","2015")
+    display <- display[showvars]
     display
   })
   
@@ -199,7 +195,7 @@ function(input, output) {
       paste("opioid_data", ".csv", sep = "")
     },
     content = function(file) {
-      write.csv(select(filter(short, Indicator.Number == input$indicatorInput),"Awardee","2013","2014","2015"), file, row.names = FALSE)
+      write.csv(filter(short, Indicator.Number == input$indicatorInput), file, row.names = FALSE)
     }
   )
   

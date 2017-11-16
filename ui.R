@@ -40,7 +40,7 @@ ui <- dashboardPage(
                                   value = 2013,
                                   animate = 
                                     animationOptions(interval=3000)),
-                      radioButtons('format', 'Export report as', c('PDF', 'Word', 'HTML')), downloadButton('downloadReport'),
+                      #radioButtons('format', 'Export report as', c('PDF', 'Word', 'HTML')), downloadButton('downloadReport'),
                       width=2
                     )
                   )
@@ -69,7 +69,7 @@ ui <- dashboardPage(
             tabName = "data",
             fluidRow(
               box(tableOutput("results"),
-                  downloadButton("downloadData", "Download CSV"))
+                  downloadButton("downloadData", "Download CSV"), width=8)
               
             )
           )
