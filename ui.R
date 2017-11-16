@@ -58,9 +58,7 @@ ui <- dashboardPage(
                             animate = 
                               animationOptions(interval=3000)),
                 width=2
-              )
-            ),
-            fluidRow(
+              ),
               box(plotOutput("trendplot", height=200), width=8)
             )
             

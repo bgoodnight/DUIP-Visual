@@ -141,7 +141,7 @@ function(input, output) {
     
     backdrop <- geom_polygon(data = map_data("state"), aes(x=long, y = lat, group = group), fill = "grey", color = "white")
     
-    descriptives <- geom_polygon(data = projection, aes(x = long, y = lat, fill = (Intercept + (Slope*(input$projectionInput-2013))), group = group), color = "grey40", size = .3)
+    descriptives <- geom_polygon(data = projection, aes(x = long, y = lat, fill = (Intercept + (Slope*(input$projectionInput-2013))), group = group), color = "grey40")
     
     trend <- geom_text(data = newslope, aes(long, lat, color= sign, label=round((Intercept+(Slope*(input$projectionInput[1]-2013))),1)))
     
