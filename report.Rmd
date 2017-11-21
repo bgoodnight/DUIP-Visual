@@ -71,7 +71,7 @@ library(scales)
 
 Nationwide, the number of `r tolower(filtered[1,"Indicator.Name"])` has been `r slopesign` by a rate of about `r round(regression$coeff[2], 1)` per 100,000 annually, on average.
 
-If this trend continues, by 2018 the average level of `r tolower(filtered[1,"Indicator.Name"])` will be `r round(newvalue,1)` per 100,000 - an estimated `r format(round(newvalue*3224,0),scientific=FALSE)` annually. This represents a `r percent((newvalue-oldvalue)/oldvalue)` change since `r input$yearInput`.
+If this trend continues, by 2018 the average level of `r tolower(filtered[1,"Indicator.Name"])` will be `r round(newvalue,1)` per 100,000 residents - an estimated `r format(round(newvalue*3224,0),scientific=FALSE)` people annually. This represents a `r percent((newvalue-oldvalue)/oldvalue)` change since `r input$yearInput`.
 
 The graph below displays the predicted forecast for `r tolower(filtered[1,"Indicator.Name"])` based on PfS / DDPI data from 2013 to 2015.
 
