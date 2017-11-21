@@ -103,13 +103,15 @@ function(input, output) {
     ggplot() + 
       backdrop +
       descriptives +
-      scale_fill_gradient(low = 'lightblue', high = 'darkblue', name = paste(input$yearInput[1],"Value"), 
+      scale_fill_gradient(low = 'lightblue', high = 'darkblue', name = paste("Rate per 100,000"), 
                           limits=c(0, max(subset(slopes, Indicator.Number == input$indicatorInput)$value))) +
       trend +
-      scale_size(name = "Yearly Change") +
+      scale_size(name = "Yearly Change in Rate") +
       scale_shape_manual(values=c(19, 19), name = "Trend", labels = c("Getting Better","Getting Worse")) +
       scale_color_manual(values=c('green', 'red'), name = "Trend", labels = c("Getting Better","Getting Worse")) +
       coord_fixed(1.3) +
+      labs(title = paste('Descriptives and trends for',tolower(filtered[1,"Indicator.Name"]),'in',input$yearInput),
+           caption = "Note: Rate per 100,000 residents is age-adjusted for current year") +
       theme(axis.line=element_blank(),
             axis.text.x=element_blank(),
             axis.text.y=element_blank(),

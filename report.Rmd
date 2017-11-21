@@ -21,7 +21,7 @@ filtered <-
 The map below shows reported levels of `r tolower(filtered[1,"Indicator.Name"])` in `r input$yearInput` for all PfS / DDPI states. The color of each state represents the relative number of `r tolower(filtered[1,"Indicator.Name"])` reported in `r input$yearInput` for each state.
 
 The circles on each state represent the annual rate of change in `r tolower(filtered[1,"Indicator.Name"])` observed between 2013 and 2015. Green circles indicate states that are improving, and red circles indicate states that are getting worse. Large circles indicate a higher rate of change.
-```{r fig.width=12, fig.height=6, echo=FALSE}
+```{r fig.width=13, fig.height=7, echo=FALSE}
 
     ggplot(data = graphdata) + 
       geom_polygon(data = map_data("state"), aes(x=long, y = lat, fill = value, group = group), fill = "grey", color = "white") +

@@ -31,7 +31,7 @@ ui <- dashboardPage(
           tabItem(
             tabName = "heatmap",
                   fluidRow(
-                    box(plotOutput("coolplot", height=600), width=8),
+                    box(plotOutput("coolplot", height=600), width=9),
                     box(
                       sliderInput("yearInput","Year",
                                   min = 2013,
@@ -41,14 +41,14 @@ ui <- dashboardPage(
                                   animate = 
                                     animationOptions(interval=3000)),
                       radioButtons('format', 'Export report as', c('Word', 'HTML')), downloadButton('downloadReport'),
-                      width=2
+                      width=3
                     )
                   )
           ),
           tabItem(
             tabName = "projection",
             fluidRow(
-              box(plotOutput("projectionPlot", height=600), width=8),
+              box(plotOutput("projectionPlot", height=600), width=9),
               box(
                 sliderInput("projectionInput","Prediction Year",
                             min = 2016,
@@ -57,9 +57,9 @@ ui <- dashboardPage(
                             value = 2013,
                             animate = 
                               animationOptions(interval=3000)),
-                width=2
+                width=3
               ),
-              box(plotOutput("trendplot", height=200), width=8)
+              box(plotOutput("trendplot", height=200), width=9)
             )
             
           ),
@@ -67,7 +67,7 @@ ui <- dashboardPage(
             tabName = "data",
             fluidRow(
               box(tableOutput("results"),
-                  downloadButton("downloadData", "Download CSV"), width=8)
+                  downloadButton("downloadData", "Download CSV"), width=9)
               
             )
           )
