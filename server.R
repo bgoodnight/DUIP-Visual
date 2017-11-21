@@ -107,7 +107,7 @@ function(input, output) {
                           limits=c(0, max(subset(slopes, Indicator.Number == input$indicatorInput)$value))) +
       trend +
       scale_size(name = "Yearly Change") +
-      scale_shape_manual(values=c(19, 17), name = "Trend", labels = c("Getting Better","Getting Worse")) +
+      scale_shape_manual(values=c(19, 19), name = "Trend", labels = c("Getting Better","Getting Worse")) +
       scale_color_manual(values=c('green', 'red'), name = "Trend", labels = c("Getting Better","Getting Worse")) +
       coord_fixed(1.3) +
       theme(axis.line=element_blank(),
@@ -191,6 +191,7 @@ function(input, output) {
   })
   
   output$downloadData <- downloadHandler(
+    
     filename = function() {
       paste("opioid_data", ".csv", sep = "")
     },
@@ -201,7 +202,7 @@ function(input, output) {
   
   output$downloadReport <- downloadHandler(
     filename = function() {
-      paste(input$yearInput, sep = '.', switch(
+      paste('opioid_overdose_report_',input$yearInput,'.', sep = '', switch(
         input$format, PDF = 'pdf', HTML = 'html', Word = 'docx'
       ))
     },
@@ -215,7 +216,8 @@ function(input, output) {
       on.exit(setwd(owd))
       file.copy(src, 'report.Rmd', overwrite = TRUE)
       
-            out <- render('report.Rmd', switch(
+            out <- rmarkdown::render('report.Rmd',
+                                     switch(
         input$format,
         PDF = pdf_document(), HTML = html_document(), Word = word_document()
       ))

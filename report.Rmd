@@ -1,3 +1,8 @@
+---
+title: "Opioid Overdose Report"
+output: word_document
+---
+
 ```{r echo=FALSE}
 filtered <-
       data %>%
@@ -11,15 +16,12 @@ filtered <-
     #merge state shape data with indicator data
     graphdata <- inner_join(filtered, states, by = "Awardee")
 ```
-##Opioid Morbidity and Mortality
-###State and nationwide trends for `r tolower(filtered[1,"Indicator.Name"])`
+###`r filtered[1,"Indicator.Name"]` in `r input$yearInput`
 
-The map below shows reported levels of `r tolower(filtered[1,"Indicator.Name"])` in `r input$yearInput` for all PfS / DDPI states.
+The map below shows reported levels of `r tolower(filtered[1,"Indicator.Name"])` in `r input$yearInput` for all PfS / DDPI states. The color of each state represents the relative number of `r tolower(filtered[1,"Indicator.Name"])` reported in `r input$yearInput` for each state.
 
-The color of each state represents the level of `r tolower(filtered[1,"Indicator.Name"])` in `r input$yearInput`.
-The symbols on each state represent the yearly change in the annual rate of `r tolower(filtered[1,"Indicator.Name"])` observed between 2013 and 2015.
-
-```{r fig.width=12, fig.height=8, echo=FALSE}
+The circles on each state represent the annual rate of change in `r tolower(filtered[1,"Indicator.Name"])` observed between 2013 and 2015. Green circles indicate states that are improving, and red circles indicate states that are getting worse. Large circles indicate a higher rate of change.
+```{r fig.width=12, fig.height=6, echo=FALSE}
 
     ggplot(data = graphdata) + 
       geom_polygon(data = map_data("state"), aes(x=long, y = lat, fill = value, group = group), fill = "grey", color = "white") +
@@ -28,7 +30,7 @@ The symbols on each state represent the yearly change in the annual rate of `r t
                            limits=c(0, max(subset(slopes, Indicator.Number == input$indicatorInput)$value))) +
       geom_point(data = newslope, aes(long, lat, size = (abs(Slope)), color = sign, shape = sign), fill = "white") +
       scale_size(name = "Yearly Change") +
-      scale_shape_manual(values=c(19, 17), name = "Trend", labels = c("Getting Better","Getting Worse")) +
+      scale_shape_manual(values=c(19, 19), name = "Trend", labels = c("Getting Better","Getting Worse")) +
       scale_color_manual(values=c("green", "red"), name = "Trend", labels = c("Getting Better","Getting Worse")) +
       coord_fixed(1.3) +
       theme(axis.line=element_blank(),
@@ -44,9 +46,16 @@ The symbols on each state represent the yearly change in the annual rate of `r t
             plot.background=element_blank())
 ```
 
-The average level of `r tolower(filtered[1,"Indicator.Name"])` in `r input$yearInput` for all PfS / DDPI states was `r round(mean(filtered$value, na.rm = TRUE), digits = 1)`.
+*Note*: The data presented here are required indicators provided by PfS/DDPI states. They represent age-adjusted rates per 100,000 residents from the corresponding year.
+
+Overall, the average rate of `r tolower(filtered[1,"Indicator.Name"])` across all PfS / DDPI states was `r round(mean(filtered$value, na.rm = TRUE), digits = 1)` per 100,000 residents in `r input$yearInput`.
+
+
+
 \newpage
-```{r echo=FALSE}
+```{r echo=FALSE,warning=FALSE,message=FALSE}
+oldvalue <- mean(filtered$value, na.rm = TRUE)
+
 filtered <-
       data %>%
       filter(
@@ -55,12 +64,14 @@ filtered <-
 
 regression <- lm(value ~ variable, data = filtered)
 slopesign <- ifelse(regression$coeff[2] >= 0, "increasing", "decreasing")
+newvalue <- regression$coeff[1] + (regression$coeff[2]*2018)
+library(scales)
 ```
-###Nationwide forecast for `r tolower(filtered[1,"Indicator.Name"])`
+####Nationwide forecast for `r tolower(filtered[1,"Indicator.Name"])`
 
-Nationwide, the number of `r tolower(filtered[1,"Indicator.Name"])` has been `r slopesign` by `r round(regression$coeff[2], 1)` annually, on average.
+Nationwide, the number of `r tolower(filtered[1,"Indicator.Name"])` has been `r slopesign` by a rate of about `r round(regression$coeff[2], 1)` per 100,000 annually, on average.
 
-If these trends continue, by 2018 the average level of `r tolower(filtered[1,"Indicator.Name"])` is predicted to be `r round(regression$coeff[1] + (regression$coeff[2]*2018),1)`.
+If this trend continues, by 2018 the average level of `r tolower(filtered[1,"Indicator.Name"])` will be `r round(newvalue,1)` per 100,000 - an estimated `r format(round(newvalue*3224,0),scientific=FALSE)` annually. This represents a `r percent((newvalue-oldvalue)/oldvalue)` change since `r input$yearInput`.
 
 The graph below displays the predicted forecast for `r tolower(filtered[1,"Indicator.Name"])` based on PfS / DDPI data from 2013 to 2015.
 
@@ -74,13 +85,14 @@ ggplot(filtered,aes(variable,value)) +
 
 ```
 
-###State comparisons for `r tolower(filtered[1,"Indicator.Name"])`
+####State comparisons for `r tolower(filtered[1,"Indicator.Name"])`
 
 Across all years surveyed, the state with the lowest level of `r tolower(filtered[1,"Indicator.Name"])` was `r filtered[which.min(filtered$value),"Awardee"]` in `r filtered[which.min(filtered$value),"variable"]` with a rate of `r round(filtered[which.min(filtered$value),"value"],1)`.
 
 The state with the highest level of `r tolower(filtered[1,"Indicator.Name"])` was `r filtered[which.max(filtered$value),"Awardee"]` in `r filtered[which.max(filtered$value),"variable"]` with a rate of `r round(filtered[which.max(filtered$value),"value"],1)`.
 
 Overall, `r newslope[which.max(newslope$Slope),"Awardee"]` had the highest rate of change with an average annual change of `r round(newslope[which.max(newslope$Slope),"Slope"],1)`.
+
 \newpage
 A table of the data used to generate this report is included below.
 
@@ -91,7 +103,8 @@ A table of the data used to generate this report is included below.
     slopes <- filter(slopes, Indicator.Number == input$indicatorInput, variable == 0)
     colnames(slopes)[3] <- "Merge"
     display <- left_join(short,slopes,"Merge")
-    display <- select(display,"Awardee","2013","2014","2015","Slope")
+    myvars <- c("Awardee","2013","2014","2015","Slope")
+    display <- display[myvars]
     display <- arrange(display,Awardee)
     library(knitr)
     kable(display, digits = 2)
