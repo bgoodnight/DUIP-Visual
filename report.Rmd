@@ -21,15 +21,15 @@ filtered <-
 The map below shows reported levels of `r tolower(filtered[1,"Indicator.Name"])` in `r input$yearInput` for all PfS / DDPI states. The color of each state represents the relative number of `r tolower(filtered[1,"Indicator.Name"])` reported in `r input$yearInput` for each state.
 
 The circles on each state represent the annual rate of change in `r tolower(filtered[1,"Indicator.Name"])` observed between 2013 and 2015. Green circles indicate states that are improving, and red circles indicate states that are getting worse. Large circles indicate a higher rate of change.
-```{r fig.width=13, fig.height=7, echo=FALSE}
+```{r fig.width=15, fig.height=7, echo=FALSE}
 
     ggplot(data = graphdata) + 
       geom_polygon(data = map_data("state"), aes(x=long, y = lat, fill = value, group = group), fill = "grey", color = "white") +
       geom_polygon(aes(x = long, y = lat, fill = value, group = group), color = "grey40") + 
-      scale_fill_gradient(low = 'lightblue', high = 'darkblue', name = paste(input$yearInput[1],"Value"), 
+      scale_fill_gradient(low = 'lightblue', high = 'darkblue', name = paste("Rate per 100,000"), 
                            limits=c(0, max(subset(slopes, Indicator.Number == input$indicatorInput)$value))) +
       geom_point(data = newslope, aes(long, lat, size = (abs(Slope)), color = sign, shape = sign), fill = "white") +
-      scale_size(name = "Yearly Change") +
+      scale_size(name = "Yearly Change in Rate") +
       scale_shape_manual(values=c(19, 19), name = "Trend", labels = c("Getting Better","Getting Worse")) +
       scale_color_manual(values=c("green", "red"), name = "Trend", labels = c("Getting Better","Getting Worse")) +
       coord_fixed(1.3) +
