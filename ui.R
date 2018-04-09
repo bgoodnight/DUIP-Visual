@@ -40,7 +40,7 @@ ui <- dashboardPage(
                                   value = 2013,
                                   animate = 
                                     animationOptions(interval=3000)),
-                      radioButtons('format', 'Export report as', c('Word', 'HTML')), downloadButton('downloadReport'),
+                      radioButtons('format', 'Export report as', c('Word', 'HTML', 'PDF')), downloadButton('downloadReport'),
                       width=3
                     )
                   )

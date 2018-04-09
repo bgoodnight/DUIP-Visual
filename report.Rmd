@@ -20,9 +20,9 @@ filtered <-
 ```
 ###`r filtered[1,"Indicator.Name"]` in `r input$yearInput`
 
-The map below shows reported levels of `r tolower(filtered[1,"Indicator.Name"])` in `r input$yearInput` for all PfS / DDPI states. The color of each state represents the relative number of `r tolower(filtered[1,"Indicator.Name"])` reported in `r input$yearInput` for each state.
+The map below shows reported levels of `r tolower(filtered[1,"Indicator.Name"])` in `r input$yearInput` for all 50 states. The color of each state represents the relative number of `r tolower(filtered[1,"Indicator.Name"])` reported in `r input$yearInput` for each state.
 
-The circles on each state represent the annual rate of change in `r tolower(filtered[1,"Indicator.Name"])` observed between 2013 and 2015. Green circles indicate states that are improving, and red circles indicate states that are getting worse. Large circles indicate a higher rate of change.
+The circles on each state represent the annual rate of change in `r tolower(filtered[1,"Indicator.Name"])` observed between 2013 and 2016. Green circles indicate states that are improving, and red circles indicate states that are getting worse. Large circles indicate a higher rate of change.
 ```{r fig.width=15, fig.height=7, echo=FALSE}
 
     ggplot(data = graphdata) + 
@@ -48,9 +48,9 @@ The circles on each state represent the annual rate of change in `r tolower(filt
             plot.background=element_blank())
 ```
 
-*Note*: The data presented here are required indicators provided by PfS/DDPI states. They represent age-adjusted rates per 100,000 residents from the corresponding year.
+*Note*: The data presented here are based on The Multiple Cause of Death data available on CDC WONDER. They represent age-adjusted rates per 100,000 residents from the corresponding year.
 
-Overall, the average rate of `r tolower(filtered[1,"Indicator.Name"])` across all PfS / DDPI states was `r round(mean(filtered$value, na.rm = TRUE), digits = 1)` per 100,000 residents in `r input$yearInput`.
+Overall, the average rate of `r tolower(filtered[1,"Indicator.Name"])` across all 50 states was `r round(mean(filtered$value, na.rm = TRUE), digits = 1)` per 100,000 residents in `r input$yearInput`.
 
 
 
@@ -75,7 +75,7 @@ Nationwide, the number of `r tolower(filtered[1,"Indicator.Name"])` has been `r 
 
 If this trend continues, by 2018 the average level of `r tolower(filtered[1,"Indicator.Name"])` will be `r round(newvalue,1)` per 100,000 residents - an estimated `r format(round(newvalue*3224,0),scientific=FALSE)` people annually. This represents a `r percent((newvalue-oldvalue)/oldvalue)` change since `r input$yearInput`.
 
-The graph below displays the predicted forecast for `r tolower(filtered[1,"Indicator.Name"])` based on PfS / DDPI data from 2013 to 2015.
+The graph below displays the predicted forecast for `r tolower(filtered[1,"Indicator.Name"])` based on Multiple Cause of Death data from 2013 to 2016.
 
 ```{r fig.width=12, fig.height=3, echo=FALSE, message=FALSE, warning=FALSE}
 
@@ -89,11 +89,11 @@ ggplot(filtered,aes(variable,value)) +
 
 ####State comparisons for `r tolower(filtered[1,"Indicator.Name"])`
 
-Across all years surveyed, the state with the lowest level of `r tolower(filtered[1,"Indicator.Name"])` was `r filtered[which.min(filtered$value),"Awardee"]` in `r filtered[which.min(filtered$value),"variable"]` with a rate of `r round(filtered[which.min(filtered$value),"value"],1)`.
+Across all years surveyed, the state with the lowest level of `r tolower(filtered[1,"Indicator.Name"])` was `r filtered[which.min(filtered$value),"State"]` in `r filtered[which.min(filtered$value),"variable"]` with a rate of `r round(filtered[which.min(filtered$value),"value"],1)`.
 
-The state with the highest level of `r tolower(filtered[1,"Indicator.Name"])` was `r filtered[which.max(filtered$value),"Awardee"]` in `r filtered[which.max(filtered$value),"variable"]` with a rate of `r round(filtered[which.max(filtered$value),"value"],1)`.
+The state with the highest level of `r tolower(filtered[1,"Indicator.Name"])` was `r filtered[which.max(filtered$value),"State"]` in `r filtered[which.max(filtered$value),"variable"]` with a rate of `r round(filtered[which.max(filtered$value),"value"],1)`.
 
-Overall, `r newslope[which.max(newslope$Slope),"Awardee"]` had the highest rate of change with an average annual change of `r round(newslope[which.max(newslope$Slope),"Slope"],1)`.
+Overall, `r newslope[which.max(newslope$Slope),"State"]` had the highest rate of change with an average annual change of `r round(newslope[which.max(newslope$Slope),"Slope"],1)`.
 
 \newpage
 A table of the data used to generate this report is included below.
@@ -101,8 +101,8 @@ A table of the data used to generate this report is included below.
 ``` {r echo=FALSE, warning=FALSE}
     short <- filter(data, Indicator.Number == input$indicatorInput)
     #change state names to lower-case for merge
-    slopes <- filter(slopes, Indicator.Number == input$indicatorInput, variable == 0)
-    display <- arrange(short,Awardee)
+    showvars <- c("State","Year","Age.Adjusted.Rate")
+    display <- short[showvars]
     library(knitr)
     kable(display, digits = 2)
 ```

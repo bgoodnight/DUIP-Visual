@@ -15,6 +15,7 @@ myvars <- c("Awardee","Program","Category","Indicator.Number","Indicator.Name",
 data <- data[myvars]
 
 #change state names to lower-case for merge
+data$State <- data$Awardee
 data["Awardee"] <- mutate_all(data["Awardee"], funs(tolower))
 
 #change indicator values and years to numeric data
@@ -175,7 +176,7 @@ function(input, output) {
   output$results <- renderTable({
     display <- filter(data, Indicator.Number == input$indicatorInput)
     #short <- select(short, 'Awardee', 'Program', 'Category, '2013', '2014', '2015')
-    showvars <- c("Awardee","Program","Year","Age.Adjusted.Rate")
+    showvars <- c("State","Year","Age.Adjusted.Rate")
     display <- display[showvars]
     display
   })
