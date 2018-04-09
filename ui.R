@@ -20,7 +20,7 @@ ui <- dashboardPage(
                                                      "All drug overdose hospitalizations" = 12,
                                                      "Hospitalizations involving all opioid overdose excluding heroin" = 13,
                                                      "Hospitalizations involving heroin overdose" = 14
-        ), selected = 8),
+        ), selected = 1),
         menuItem("Heat Map", icon = icon("map"), tabName = "heatmap"),
         menuItem("Forecast", icon = icon("line-chart"), tabName = "projection"),
         menuItem("Raw Data", icon = icon("file-text"), tabName = "data")
@@ -35,7 +35,7 @@ ui <- dashboardPage(
                     box(
                       sliderInput("yearInput","Year",
                                   min = 2013,
-                                  max = 2015,
+                                  max = 2016,
                                   sep = "",
                                   value = 2013,
                                   animate = 
@@ -51,10 +51,10 @@ ui <- dashboardPage(
               box(plotOutput("projectionPlot", height=600), width=9),
               box(
                 sliderInput("projectionInput","Prediction Year",
-                            min = 2016,
-                            max = 2018,
+                            min = 2017,
+                            max = 2020,
                             sep = "",
-                            value = 2013,
+                            value = 2017,
                             animate = 
                               animationOptions(interval=3000)),
                 width=3

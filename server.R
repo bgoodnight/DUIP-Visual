@@ -7,34 +7,22 @@ library(rmarkdown)
 library(shinydashboard)
 
 #Read in data
-short <- read.csv("alldata.csv")
-
-#Keep only first 14 indicators
-short <- subset(short, Indicator.Number <= 14)
+data <- read.csv("indicators.csv")
 
 #select variables for analysis
 myvars <- c("Awardee","Program","Category","Indicator.Number","Indicator.Name",
-            "X2013.Age.Adjusted.Rate","X2014.Age.Adjusted.Rate","X2015.Age.Adjusted.Rate")
-short <- short[myvars]
-
-#set all zeros to NA
-short[short == 0] <- NA
-
-#change column names to year numbers
-colnames(short)[6:8] <- 2013:2015
-
-#create long data frame with with years as new variable
-data = melt(short, measure.vars = c("2013","2014","2015"))
+            "Year","Age.Adjusted.Rate")
+data <- data[myvars]
 
 #change state names to lower-case for merge
 data["Awardee"] <- mutate_all(data["Awardee"], funs(tolower))
 
 #change indicator values and years to numeric data
-data$value <- as.double(data$value)
-data$variable <- as.double(data$variable)
+data$value <- as.double(data$Age.Adjusted.Rate)
+data$variable <- as.double(data$Year)
 
 #set year 2013 to zero to aid in interpretability of regression intercepts
-data$variable <- data$variable - 1
+data$variable <- data$variable - 2013
 
 #remove rows with missing data to reduce data frame size
 slopes <- data[complete.cases(data[ , "value"]),]
@@ -143,7 +131,7 @@ function(input, output) {
     
     backdrop <- geom_polygon(data = map_data("state"), aes(x=long, y = lat, group = group), fill = "grey", color = "white")
     
-    descriptives <- geom_polygon(data = projection, aes(x = long, y = lat, fill = (Intercept + (Slope*(input$projectionInput-2013))), group = group), color = "grey40")
+    descriptives <- geom_polygon(data = projection, aes(x = long, y = lat, fill = Intercept, group = group), color = "grey40")
     
     trend <- geom_text(data = newslope, aes(long, lat, color= sign, label=round((Intercept+(Slope*(input$projectionInput[1]-2013))),1)))
     
@@ -151,7 +139,7 @@ function(input, output) {
       backdrop +
       descriptives +
       scale_fill_gradient(low = 'lightblue', high = 'darkblue', name = paste(input$projectionInput[1],"Estimate"), 
-                          limits=c(0, max(newslope$Intercept+(newslope$Slope*(2018-2013))))) +
+                          limits=c(0, max(newslope$Intercept+(newslope$Slope*(2020-2013))))) +
       trend +
       scale_color_manual(values=c('darkgreen', 'darkred'), name = "Trend", labels = c("Getting Better","Getting Worse")) +
       coord_fixed(1.3) +
@@ -179,15 +167,15 @@ function(input, output) {
     ggplot(filtered,aes(variable,value)) +
       stat_summary(fun.data = "mean_se", color = "blue", size = 1) + 
       geom_smooth(method='lm',fullrange=TRUE) + 
-      xlim(2013, 2018) +
+      xlim(2013, 2020) +
       labs(title = paste("Nationwide Trend for",filtered[1,"Indicator.Name"]), x = "Year", y = "National Average")
     
   })
   
   output$results <- renderTable({
-    display <- filter(short, Indicator.Number == input$indicatorInput)
+    display <- filter(data, Indicator.Number == input$indicatorInput)
     #short <- select(short, 'Awardee', 'Program', 'Category, '2013', '2014', '2015')
-    showvars <- c("Awardee","Program","Category","2013","2014","2015")
+    showvars <- c("Awardee","Program","Year","Age.Adjusted.Rate")
     display <- display[showvars]
     display
   })
@@ -198,7 +186,7 @@ function(input, output) {
       paste("opioid_data", ".csv", sep = "")
     },
     content = function(file) {
-      write.csv(filter(short, Indicator.Number == input$indicatorInput), file, row.names = FALSE)
+      write.csv(filter(data, Indicator.Number == input$indicatorInput), file, row.names = FALSE)
     }
   )
   
