@@ -1,6 +1,8 @@
 ---
 title: "Opioid Overdose Report"
-output: word_document
+output:
+  html_document:
+    df_print: paged
 ---
 
 ```{r echo=FALSE}
@@ -97,15 +99,10 @@ Overall, `r newslope[which.max(newslope$Slope),"Awardee"]` had the highest rate 
 A table of the data used to generate this report is included below.
 
 ``` {r echo=FALSE, warning=FALSE}
-    short <- filter(short, Indicator.Number == input$indicatorInput)
-    short["Merge"] <- mutate_all(short["Awardee"], funs(tolower))
+    short <- filter(data, Indicator.Number == input$indicatorInput)
     #change state names to lower-case for merge
     slopes <- filter(slopes, Indicator.Number == input$indicatorInput, variable == 0)
-    colnames(slopes)[3] <- "Merge"
-    display <- left_join(short,slopes,"Merge")
-    myvars <- c("Awardee","2013","2014","2015","Slope")
-    display <- display[myvars]
-    display <- arrange(display,Awardee)
+    display <- arrange(short,Awardee)
     library(knitr)
     kable(display, digits = 2)
 ```

@@ -13,13 +13,13 @@ ui <- dashboardPage(
                                                      "Drug overdose deaths involving natural and semi-synthetic opioids" = 5,
                                                      "Drug overdose deaths involving synthetic opioids other than methadone" = 6,
                                                      "Drug overdose deaths involving methadone" = 7,
-                                                     "Drug overdose deaths involving heroin" = 8,
-                                                     "All drug overdose emergency department visits" = 9,
-                                                     "Emergency department visits involving all opioid overdose excluding heroin" = 10,
-                                                     "Emergency department visits involving heroin overdose" = 11,
-                                                     "All drug overdose hospitalizations" = 12,
-                                                     "Hospitalizations involving all opioid overdose excluding heroin" = 13,
-                                                     "Hospitalizations involving heroin overdose" = 14
+                                                     "Drug overdose deaths involving heroin" = 8
+                                                     # "All drug overdose emergency department visits" = 9,
+                                                     # "Emergency department visits involving all opioid overdose excluding heroin" = 10,
+                                                     # "Emergency department visits involving heroin overdose" = 11,
+                                                     # "All drug overdose hospitalizations" = 12,
+                                                     # "Hospitalizations involving all opioid overdose excluding heroin" = 13,
+                                                     # "Hospitalizations involving heroin overdose" = 14
         ), selected = 1),
         menuItem("Heat Map", icon = icon("map"), tabName = "heatmap"),
         menuItem("Forecast", icon = icon("line-chart"), tabName = "projection"),
